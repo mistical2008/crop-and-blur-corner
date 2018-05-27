@@ -1,0 +1,20 @@
+#!/bin/bash
+FILES_COUNT=$(find . -iname "*.jpg" -type f | wc -l);
+SECONDS=0;
+#sec2dhms() { declare -i SS="$1" D=$(( SS / 86400 )) H=$(( SS % 86400 / 3600 )) M=$(( SS % 3600 / 60 )) S=$(( SS % 60 )) [ "$D" -gt 0 ] && echo -n "${D}:" [ "$H" -gt 0 ] && printf "%02g:" "$H" printf "%02g:%02g\n" "$M" "$S" };
+echo "РАЗМЫТИЕ ЛОГОТИПА"
+echo "---------------------------------------------------"
+echo "$(date '+%R:%S') - Всего файлов для обработки: $FILES_COUNT"
+echo "$(date '+%R:%S') - Идет обработка фото..."
+find . -iname "*.jpg" -type f -print0 \
+|\
+ xargs -0 -I{} convert \
+'{}' \
+\( -clone 0 -fill black -colorize 100 -fill white \
+-draw "path 'M 335,580 360,540 400,530 530,530 580,510 585,495 590,485 720,485 720,720 335,720 Z'" \
+-alpha off -blur 0x18 -write mpr:mask +delete \) \
+-mask mpr:mask -blur 0x30 +mask {};
+echo "$(date '+%R:%S') - Готово!";
+echo "---------------------------------------------------"
+echo "Обработка всех фото заняла $(($SECONDS / 3600)) ч. $((($SECONDS / 60) - ($SECONDS / 3600)*60)) мин. $(($SECONDS % 60)) сек.";
+echo "Среднее время обработки одного фото: $(bc <<<"scale=2;$SECONDS/$FILES_COUNT") сек.";
